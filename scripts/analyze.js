@@ -211,10 +211,13 @@ function buildEmailHTML(signals, date) {
 </body></html>`;
 }
 
-async function sendMail(html, signals, date) {
+Lass uns das systematisch lösen. Geh zu GitHub → scripts → analyze.js → Stift-Icon und ersetze die sendMail Funktion komplett durch diese Version mit vollem Debugging:
+jsasync function sendMail(html, signals, date) {
   const buyCount  = signals.filter(s => s.pattern.signal === "BUY").length;
   const sellCount = signals.filter(s => s.pattern.signal === "SELL").length;
   const subject   = `StockSense ${date}: ${buyCount}x KAUF · ${sellCount}x VERKAUF`;
+
+  console.log("RESEND_KEY:", RESEND_KEY ? `${RESEND_KEY.substring(0,8)}...` : "LEER!");
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -223,14 +226,17 @@ async function sendMail(html, signals, date) {
       "Authorization": `Bearer ${RESEND_KEY}`,
     },
     body: JSON.stringify({
-      from: "StockSense <onboarding@resend.dev>",
-      to:   EMAIL_TO,
+      from: "onboarding@resend.dev",
+      to:   [EMAIL_TO],
       subject,
       html,
     }),
   });
 
-  if (!res.ok) throw new Error(`Resend Fehler: ${res.status} ${await res.text()}`);
+  const responseText = await res.text();
+  console.log("Resend Response:", res.status, responseText);
+
+  if (!res.ok) throw new Error(`Resend Fehler: ${res.status} ${responseText}`);
   console.log("✅ Mail via Resend gesendet!");
 }
 
