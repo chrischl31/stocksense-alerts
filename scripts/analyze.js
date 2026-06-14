@@ -344,41 +344,23 @@ async function sendMail(html, signals, date) {
   const sellCount = signals.filter(s => s.pattern.signal === "SELL").length;
   const subject   = `StockSense ${date}: ${buyCount}x KAUF · ${sellCount}x VERKAUF`;
 
-  const allAnalyses = signals.map(s =>
-    `${s.pattern.signal} | ${s.quote.symbol} | ${s.pattern.name} (${s.pattern.strength}%)\n` +
-    `Kurs: ${s.quote.price.toFixed(2)} | Ziel: ${s.pattern.target.toFixed(2)} | Stop: ${s.pattern.stopLoss.toFixed(2)}\n` +
-    s.analysis
-  ).join("\n\n---\n\n");
-
-const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      "origin": "http://localhost"
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      service_id:  EJS_SERVICE,
-      template_id: EJS_TEMPLATE,
-      user_id:     EJS_KEY,
-      accessToken: EJS_KEY,
-      template_params: {
-        to_email:     EMAIL_TO,
-        subject,
-        ticker:       signals.map(s => s.quote.symbol).join(", "),
-        company:      `${buyCount} Kauf · ${sellCount} Verkauf Signale`,
-        signal_label: buyCount > 0 ? "KAUF" : "VERKAUF",
-        pattern:      signals.map(s => s.pattern.name).join(", "),
-        horizon:      "Täglicher Report",
-        price:        date,
-        target:       signals.filter(s=>s.pattern.signal==="BUY").map(s=>s.quote.symbol).join(", ") || "–",
-        stop_loss:    signals.filter(s=>s.pattern.signal==="SELL").map(s=>s.quote.symbol).join(", ") || "–",
-        rr_ratio:     `${buyCount + sellCount} Signale heute`,
-        analysis:     allAnalyses,
-        timestamp:    date + " · 08:30 Uhr Berlin",
-        disclaimer:   "Keine Anlageberatung. Automatischer täglicher Report.",
-      },
+      from: "StockSense <onboarding@resend.dev>",
+      to:   EMAIL_TO,
+      subject,
+      html,
     }),
   });
+
+  if (!res.ok) throw new Error(`Resend Fehler: ${res.status} ${await res.text()}`);
+  console.log("✅ Mail via Resend gesendet!");
+}
 
   if (!res.ok) throw new Error(`EmailJS Fehler: ${res.status} ${await res.text()}`);
   console.log("✅ Mail via EmailJS gesendet!");
