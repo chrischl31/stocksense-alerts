@@ -3,14 +3,12 @@
 
 import fetch from "node-fetch";
 import { readFileSync } from "fs";
-import { createTransport } from "nodemailer";
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY;
-const EMAIL_USER     = process.env.EMAIL_USER;     // coolthegangster@hotmail.de
-const EMAIL_PASS     = process.env.EMAIL_PASS;     // App-Passwort von Hotmail
-const EMAIL_TO       = process.env.EMAIL_TO;       // krukrukakawe@proton.me
-const MIN_CONFIDENCE = 70; // Nur Signale mit >= 70% Konfidenz mailen
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+const EMAIL_TO      = process.env.EMAIL_TO;
+const EJS_SERVICE   = process.env.EJS_SERVICE;
+const EJS_TEMPLATE  = process.env.EJS_TEMPLATE;
+const EJS_KEY       = process.env.EJS_KEY;
 
 // ── WATCHLIST LADEN ───────────────────────────────────────────────────────────
 function loadWatchlist() {
@@ -343,30 +341,42 @@ function buildEmailHTML(signals, date) {
 async function sendMail(html, signals, date) {
   const buyCount  = signals.filter(s => s.pattern.signal === "BUY").length;
   const sellCount = signals.filter(s => s.pattern.signal === "SELL").length;
+  const subject   = `StockSense ${date}: ${buyCount}x KAUF · ${sellCount}x VERKAUF`;
 
-  const subject = buyCount > 0 || sellCount > 0
-    ? `🚨 StockSense ${date}: ${buyCount > 0 ? `${buyCount}x KAUF` : ""}${buyCount > 0 && sellCount > 0 ? " · " : ""}${sellCount > 0 ? `${sellCount}x VERKAUF` : ""} – Signale erkannt`
-    : `📊 StockSense ${date}: Kein klares Signal heute`;
+  const allAnalyses = signals.map(s =>
+    `${s.pattern.signal} | ${s.quote.symbol} | ${s.pattern.name} (${s.pattern.strength}%)\n` +
+    `Kurs: ${s.quote.price.toFixed(2)} | Ziel: ${s.pattern.target.toFixed(2)} | Stop: ${s.pattern.stopLoss.toFixed(2)}\n` +
+    s.analysis
+  ).join("\n\n---\n\n");
 
-  // Nodemailer mit Hotmail/Outlook SMTP
-  const transporter = createTransport({
-    host: "smtp-mail.outlook.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
-    },
+  const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      service_id:  EJS_SERVICE,
+      template_id: EJS_TEMPLATE,
+      user_id:     EJS_KEY,
+      template_params: {
+        to_email:     EMAIL_TO,
+        subject,
+        ticker:       signals.map(s => s.quote.symbol).join(", "),
+        company:      `${buyCount} Kauf · ${sellCount} Verkauf Signale`,
+        signal_label: buyCount > 0 ? "KAUF" : "VERKAUF",
+        pattern:      signals.map(s => s.pattern.name).join(", "),
+        horizon:      "Täglicher Report",
+        price:        date,
+        target:       signals.filter(s=>s.pattern.signal==="BUY").map(s=>s.quote.symbol).join(", ") || "–",
+        stop_loss:    signals.filter(s=>s.pattern.signal==="SELL").map(s=>s.quote.symbol).join(", ") || "–",
+        rr_ratio:     `${buyCount + sellCount} Signale heute`,
+        analysis:     allAnalyses,
+        timestamp:    date + " · 08:30 Uhr Berlin",
+        disclaimer:   "Keine Anlageberatung. Automatischer täglicher Report.",
+      },
+    }),
   });
 
-  await transporter.sendMail({
-    from: `"StockSense" <${EMAIL_USER}>`,
-    to: EMAIL_TO,
-    subject,
-    html,
-  });
-
-  console.log(`✅ Mail gesendet: ${subject}`);
+  if (!res.ok) throw new Error(`EmailJS Fehler: ${res.status} ${await res.text()}`);
+  console.log("✅ Mail via EmailJS gesendet!");
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
