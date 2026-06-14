@@ -1,0 +1,14 @@
+{
+  "name": "stocksense-alerts",
+  "version": "1.0.0",
+  "description": "Automatische tägliche Aktienanalyse per Mail",
+  "type": "module",
+  "scripts": {
+    "analyze": "node scripts/analyze.js",
+    "test": "node scripts/analyze.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.9"
+  }
+}

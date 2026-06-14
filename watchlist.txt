@@ -1,0 +1,22 @@
+# ============================================================
+#  STOCKSENSE WATCHLIST
+#  Hier trägst du deine Aktien ein die täglich analysiert werden
+#  Format: TICKER  (eine Aktie pro Zeile)
+#  Kommentare mit # werden ignoriert
+# ============================================================
+
+# US Tech
+AAPL
+NVDA
+TSLA
+META
+MSFT
+AMZN
+AMD
+GOOGL
+
+# Weitere Aktien hier eintragen:
+# NFLX
+# SHOP
+# SAP.DE
+# VOW3.DE
