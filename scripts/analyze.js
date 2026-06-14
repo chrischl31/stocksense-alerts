@@ -9,6 +9,7 @@ const EMAIL_TO      = process.env.EMAIL_TO;
 const EJS_SERVICE   = process.env.EJS_SERVICE;
 const EJS_TEMPLATE  = process.env.EJS_TEMPLATE;
 const EJS_KEY       = process.env.EJS_KEY;
+const MIN_CONFIDENCE = 70;
 
 // ── WATCHLIST LADEN ───────────────────────────────────────────────────────────
 function loadWatchlist() {
