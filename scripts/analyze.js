@@ -350,13 +350,17 @@ async function sendMail(html, signals, date) {
     s.analysis
   ).join("\n\n---\n\n");
 
-  const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "origin": "http://localhost"
+    },
     body: JSON.stringify({
       service_id:  EJS_SERVICE,
       template_id: EJS_TEMPLATE,
       user_id:     EJS_KEY,
+      accessToken: EJS_KEY,
       template_params: {
         to_email:     EMAIL_TO,
         subject,
