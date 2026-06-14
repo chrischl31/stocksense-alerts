@@ -8,6 +8,7 @@ const EJS_TEMPLATE   = process.env.EJS_TEMPLATE;
 const EJS_KEY        = process.env.EJS_KEY;
 const RESEND_KEY     = process.env.RESEND_API_KEY;
 const MIN_CONFIDENCE = 70;
+console.log("RESEND_KEY vorhanden:", !!RESEND_KEY, "Länge:", RESEND_KEY?.length);
 
 function loadWatchlist() {
   const raw = readFileSync("./watchlist.txt", "utf8");
