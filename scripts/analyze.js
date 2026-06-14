@@ -211,7 +211,6 @@ function buildEmailHTML(signals, date) {
 </body></html>`;
 }
 
-Lass uns das systematisch lösen. Geh zu GitHub → scripts → analyze.js → Stift-Icon und ersetze die sendMail Funktion komplett durch diese Version mit vollem Debugging:
 jsasync function sendMail(html, signals, date) {
   const buyCount  = signals.filter(s => s.pattern.signal === "BUY").length;
   const sellCount = signals.filter(s => s.pattern.signal === "SELL").length;
