@@ -106,6 +106,7 @@ async function getAIAnalysis(quote, pattern) {
     body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 300, messages: [{ role: "user", content: prompt }] }),
   });
   const data = await res.json();
+  console.log("Anthropic Response:", JSON.stringify(data).substring(0, 200));
   return data.content?.[0]?.text || "Analyse nicht verfuegbar.";
 }
 
