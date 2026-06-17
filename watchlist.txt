@@ -14,6 +14,7 @@ GOOGL
 POET
 ZETA
 SNPS
+MSTR
 
 # DE Aktie
 ENR
