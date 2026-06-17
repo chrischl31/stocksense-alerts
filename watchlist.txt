@@ -6,14 +6,17 @@
 # ============================================================
 
 # US Tech
-AAPL
-NVDA
-TSLA
 META
 MSFT
 AMZN
 AMD
 GOOGL
+POET
+ZETA
+SNPS
+
+# DE Aktie
+ENR
 
 # Weitere Aktien hier eintragen:
 # NFLX
